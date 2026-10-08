@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141312" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://media.skillry.dev">
+<title>Opus 5.5 プロンプト集</title>
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --surface: #ffffff;
+    --surface-2: #efece5;
+    --text: #1d1c1a;
+    --muted: #5f5c56;
+    --line: #dcd8cf;
+    --accent: #b83c0b;
+    --accent-ink: #ffffff;
+    --accent-soft: #fbe9df;
+    --focus: #1d4ed8;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 6px 20px rgb(0 0 0 / 0.05);
+    --radius: 12px;
+    --font: "Yu Gothic UI", "Hiragino Sans", "Meiryo", system-ui, sans-serif;
+    --mono: "Cascadia Mono", "Consolas", "BIZ UDGothic", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141312;
+      --surface: #1d1c1a;
+      --surface-2: #292724;
+      --text: #ecebe6;
+      --muted: #a9a59d;
+      --line: #36332f;
+      --accent: #f0773a;
+      --accent-ink: #1a0d05;
+      --accent-soft: #3a2216;
+      --focus: #93b4ff;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+  button, a, select, label, input { touch-action: manipulation; }
+  h1, h2, h3 { text-wrap: balance; }
+  .skip {
+    position: absolute; left: 16px; top: -48px; z-index: 100;
+    padding: 8px 14px; border-radius: 8px; background: var(--text); color: var(--bg);
+  }
+  .skip:focus { top: 12px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.6;
+  }
+  body:has(dialog[open]) { overflow: hidden; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+  @media (min-width: 720px) { .wrap { padding: 0 24px; } }
+
+  /* ヘッダー */
+  .top {
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    border-bottom: 1px solid var(--line);
+    padding: 20px 0 14px;
+  }
+  @media (min-width: 900px) {
+    .top { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); }
+    /* 固定ヘッダーの下にフォーカス中のカードが隠れないようにする */
+    html { scroll-padding-top: 220px; }
+  }
+  .title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin-bottom: 14px; }
+  h1 { margin: 0; font-size: clamp(1.25rem, 1rem + 1.2vw, 1.6rem); letter-spacing: 0.02em; }
+  .sub { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
+  .search { position: relative; display: block; margin-bottom: 12px; }
+  .search svg { position: absolute; left: 14px; top: 50%; translate: 0 -50%; color: var(--muted); pointer-events: none; }
+  .search input {
+    width: 100%; height: 46px; padding: 0 14px 0 42px;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); color: var(--text);
+    font: inherit; font-size: 1rem;
+  }
+  .search input::placeholder { color: var(--muted); }
+  .search kbd {
+    position: absolute; right: 12px; top: 50%; translate: 0 -50%;
+    font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 5px; padding: 0 6px;
+  }
+  @media (hover: none) { .search kbd { display: none; } }
+
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    min-height: 36px; padding: 0 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+    font: inherit; font-size: 0.875rem; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip .n { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+  .chip:hover { background: var(--surface-2); }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .chip[aria-pressed="true"] .n { color: inherit; opacity: 0.75; }
+
+  .opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 0.875rem; }
+  .opts label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; min-height: 32px; }
+  .opts input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+  .opts select {
+    font: inherit; font-size: 0.875rem; height: 34px; padding: 0 8px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text);
+  }
+
+  /* 一覧 */
+  .count { color: var(--muted); font-size: 0.875rem; margin: 18px 0 12px; font-variant-numeric: tabular-nums; }
+  .grid {
+    list-style: none; margin: 0 0 40px; padding: 0;
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
+  }
+  .card {
+    display: flex; flex-direction: column; min-width: 0;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+    content-visibility: auto; contain-intrinsic-size: auto 440px;
+  }
+  .thumb {
+    position: relative; display: block; width: 100%; aspect-ratio: 16 / 10;
+    margin: 0; padding: 0; border: 0; background: var(--surface-2);
+    cursor: pointer; overflow: hidden;
+  }
+  .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .thumb.noimg::after {
+    content: "プレビューなし"; position: absolute; inset: 0;
+    display: grid; place-items: center; color: var(--muted); font-size: 0.8rem;
+  }
+  .cat {
+    position: absolute; left: 10px; top: 10px; z-index: 1;
+    padding: 2px 9px; border-radius: 999px;
+    background: rgb(0 0 0 / 0.68); color: #fff; font-size: 0.75rem;
+  }
+  .body { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; flex: 1; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.85rem; }
+  .author { margin: 0; font-size: 0.9rem; font-weight: 700; overflow-wrap: anywhere; }
+  .badge {
+    font-size: 0.72rem; padding: 1px 7px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted); white-space: nowrap;
+  }
+  .badge.dup { background: var(--accent-soft); border-color: transparent; color: var(--text); }
+  .preview {
+    margin: 0; font-size: 0.875rem; color: var(--text); overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+  .tags li { font-size: 0.72rem; color: var(--muted); background: var(--surface-2); border-radius: 5px; padding: 1px 6px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 4px; }
+
+  .btn {
+    min-height: 38px; padding: 0 13px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+    font: inherit; font-size: 0.85rem; cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+
+  .empty { text-align: center; color: var(--muted); padding: 48px 16px; }
+
+  footer { color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--line); padding: 18px 0 32px; }
+  footer p { margin: 0 0 4px; }
+
+  /* 全文ダイアログ */
+  dialog {
+    width: min(880px, calc(100% - 24px)); max-height: calc(100dvh - 24px);
+    padding: 0; border: 1px solid var(--line); border-radius: 16px;
+    background: var(--surface); color: var(--text); overflow: auto;
+    overscroll-behavior: contain;
+  }
+  dialog::backdrop { background: rgb(0 0 0 / 0.55); }
+  .dlg-head {
+    position: sticky; top: 0; z-index: 1;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .dlg-head h2 { margin: 0 auto 0 0; font-size: 1.05rem; overflow-wrap: anywhere; }
+  .dlg-body { padding: 16px; display: grid; gap: 14px; }
+  .dlg-img { width: 100%; height: 300px; object-fit: contain; background: var(--surface-2); border-radius: 10px; display: block; }
+  @media (max-width: 600px) { .dlg-img { height: 200px; } }
+  .dlg-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.85rem; color: var(--muted); }
+  .note {
+    margin: 0; font-size: 0.85rem; padding: 10px 12px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--text);
+  }
+  .prompt {
+    margin: 0; padding: 16px; border-radius: 10px; background: var(--surface-2);
+    font-family: var(--mono); font-size: 0.875rem; line-height: 1.75;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .others h3 { font-size: 0.9rem; margin: 0 0 6px; }
+  .others ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 0.85rem; }
+  .icon-btn { width: 38px; padding: 0; justify-content: center; font-size: 1.1rem; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; translate: -50% 12px; z-index: 50;
+    background: var(--text); color: var(--bg); padding: 9px 18px; border-radius: 999px;
+    font-size: 0.9rem; opacity: 0; pointer-events: none;
+    transition: opacity 0.18s ease, translate 0.18s ease;
+  }
+  .toast.show { opacity: 1; translate: -50% 0; }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+
+  /* 公開版：パスワードを入れるまでは、一覧などを出さない */
+  body.locked > .top, body.locked > main, body.locked > footer, body.locked > .skip { display: none; }
+  body:not(.locked) > .lock { display: none; }
+  .lock { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+  .lock-card {
+    width: min(400px, 100%); display: grid; gap: 14px; padding: 28px 24px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+  }
+  .lock-title { margin: 0; font-size: 1.3rem; }
+  .lock-sub { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .lock-field { display: grid; gap: 6px; font-size: 0.9rem; }
+  .lock-field input {
+    height: 46px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--bg); color: var(--text); font: inherit; font-size: 1rem;
+  }
+  .lock-remember { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; min-height: 32px; }
+  .lock-remember input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+  .lock-btn { justify-content: center; min-height: 46px; font-size: 1rem; }
+  .lock-btn:disabled { opacity: 0.6; cursor: progress; }
+  .lock-msg { margin: 0; min-height: 1.5em; font-size: 0.9rem; color: var(--muted); }
+  .lock-msg.err { color: #b42318; }
+  @media (prefers-color-scheme: dark) { .lock-msg.err { color: #ff8a80; } }
+</style>
+</head>
+<body class="locked">
+<div class="lock" id="lock">
+  <form class="lock-card" id="lockForm">
+    <h1 class="lock-title">Opus 5.5 プロンプト集</h1>
+    <p class="lock-sub">パスワードを入れると開きます。</p>
+    <input type="text" name="username" autocomplete="username" value="opus-prompts" hidden>
+    <label class="lock-field"><span>パスワード</span>
+      <input type="password" id="lockPw" name="password" autocomplete="current-password" spellcheck="false" required>
+    </label>
+    <label class="lock-remember"><input type="checkbox" id="lockRemember"> この端末で覚える</label>
+    <button type="submit" class="btn primary lock-btn" id="lockBtn">開く</button>
+    <p class="lock-msg" id="lockMsg" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<a class="skip" href="#main">一覧へ移動</a>
+<header class="top">
+  <div class="wrap">
+    <div class="title-row">
+      <h1>Opus 5.5 プロンプト集</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <label class="search">
+      <span class="sr-only">プロンプトを検索</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" name="q" type="search" autocomplete="off" spellcheck="false" enterkeyhint="search"
+        placeholder="キーワードで探す（日本語OK） 例：宇宙、ゲーム、ロゴ…">
+      <kbd aria-hidden="true">/</kbd>
+    </label>
+    <div class="row">
+      <div class="chips" id="chips" role="group" aria-label="種類で絞り込む"></div>
+      <div class="opts">
+        <label><input type="checkbox" id="group" checked> 同じプロンプトはまとめる</label>
+        <label><input type="checkbox" id="fullOnly"> 全文が公開されているものだけ</label>
+        <label>並び順
+          <select id="sort">
+            <option value="default">掲載順</option>
+            <option value="long">詳しい順（長いプロンプト）</option>
+            <option value="short">短い順</option>
+            <option value="popular">よく使われている順</option>
+            <option value="new">新しく追加された順</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main" tabindex="-1">
+  <p class="count" id="count" aria-live="polite"></p>
+  <ul class="grid" id="grid"></ul>
+  <p class="empty" id="empty" hidden>条件に合うプロンプトがありません。キーワードを短くするか、絞り込みを外してみてください。</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>各作品・プロンプトの権利は、それぞれの作者にあります。作り方の参考として見るためのページです。</p>
+    <p>データ元：<a href="https://github.com/yihui-dev/awesome-opus5-5-videos" target="_blank" rel="noopener noreferrer">yihui-dev/awesome-opus5-5-videos</a>（Copyright (c) 2026 yihui-dev／MIT ライセンス・<a href="LICENSE-awesome-opus5-5-videos.txt">全文</a>）</p>
+    <p><button type="button" class="btn" id="forgetKey">この端末のパスワードの記憶を消す</button></p>
+  </div>
+</footer>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <div class="dlg-head">
+    <h2 id="dlgTitle"></h2>
+    <button type="button" class="btn primary" id="dlgCopy">コピー</button>
+    <button type="button" class="btn icon-btn" id="dlgClose" aria-label="閉じる">×</button>
+  </div>
+  <div class="dlg-body" id="dlgBody"></div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// 公開版のロック画面。パスワードからブラウザーの中で鍵を作り、vault.json を元に戻してから一覧の処理を動かす。
+// 鍵の作り方は publish.js と同じ（PBKDF2-SHA256 → AES-256-GCM、データは gzip してから暗号化）。
+(() => {
+  'use strict';
+  const KDF = {"salt":"tsHqGVEJ5q6GnlAS4GrDWQ==","iterations":600000};
+  const STORE = 'opus-prompts:site-key';
+  const $ = (id) => document.getElementById(id);
+  const msg = (text, isErr) => {
+    const m = $('lockMsg');
+    m.textContent = text;
+    m.classList.toggle('err', Boolean(isErr));
+  };
+  const b64ToBytes = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const bytesToB64 = (b) => {
+    let s = '';
+    for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s);
+  };
+
+  class WrongPassword extends Error {}
+
+  let vaultPromise = null;
+  const loadVault = () => {
+    if (!vaultPromise) {
+      vaultPromise = fetch('vault.json', { cache: 'no-cache' }).then((r) => {
+        if (!r.ok) throw new Error('vault ' + r.status);
+        return r.json();
+      });
+      vaultPromise.catch(() => { vaultPromise = null; }); // 失敗したら次に押したときに取り直す
+    }
+    return vaultPromise;
+  };
+
+  async function deriveRaw(password) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', hash: 'SHA-256', salt: b64ToBytes(KDF.salt), iterations: KDF.iterations }, base, 256);
+    return new Uint8Array(bits);
+  }
+
+  let opened = false;
+  async function openWith(raw) {
+    const vault = await loadVault();
+    if (!vault || vault.format !== 'opus-prompts-site' || vault.version !== 1 || !vault.data) throw new Error('shape');
+    const key = await crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['decrypt']);
+    let plain;
+    try {
+      plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(vault.data.iv) }, key, b64ToBytes(vault.data.ct));
+    } catch {
+      throw new WrongPassword();
+    }
+    const text = await new Response(new Blob([plain]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    const data = JSON.parse(text);
+    if (opened) return;
+    opened = true;
+    window.OPUS_VIDEOS = data.items;
+    window.OPUS_SOURCE = data.meta;
+    document.body.classList.remove('locked');
+    // 一覧の処理は、データがそろってから動かす
+    const s = document.createElement('script');
+    s.textContent = $('appSrc').textContent;
+    document.body.append(s);
+  }
+
+  const remembered = () => {
+    try { return localStorage.getItem(STORE) || sessionStorage.getItem(STORE); } catch { return null; }
+  };
+  const forget = () => {
+    try { localStorage.removeItem(STORE); sessionStorage.removeItem(STORE); } catch { /* 保存が使えない環境 */ }
+  };
+  const remember = (raw, persist) => {
+    try { (persist ? localStorage : sessionStorage).setItem(STORE, bytesToB64(raw)); } catch { /* 保存が使えない環境 */ }
+  };
+
+  async function start() {
+    if (!window.crypto || !crypto.subtle || typeof DecompressionStream === 'undefined') {
+      msg('このブラウザーでは開けません。新しい Chrome・Edge・Safari で開いてください。', true);
+      $('lockBtn').disabled = true;
+      return;
+    }
+    const saved = remembered();
+    if (saved) {
+      msg('開いています…');
+      try {
+        await openWith(b64ToBytes(saved));
+        return;
+      } catch (e) {
+        forget();
+        msg(e instanceof WrongPassword ? 'パスワードが変わりました。もう一度入力してください。' : '読み込めませんでした。再読み込みしてください。', true);
+      }
+    } else {
+      loadVault().catch(() => {}); // 入力しているあいだに先に取りに行く
+      msg('');
+    }
+    if (matchMedia('(hover: hover)').matches) $('lockPw').focus();
+  }
+
+  $('lockForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = $('lockPw').value;
+    if (!password) return;
+    $('lockBtn').disabled = true;
+    msg('確かめています…');
+    try {
+      const raw = await deriveRaw(password);
+      await openWith(raw);
+      remember(raw, $('lockRemember').checked);
+      $('lockPw').value = '';
+    } catch (err) {
+      msg(err instanceof WrongPassword
+        ? 'パスワードが違います。'
+        : 'ページを読み込めませんでした。インターネットにつながっているか確かめて、再読み込みしてください。', true);
+      $('lockBtn').disabled = false;
+      $('lockPw').select();
+    }
+  });
+
+  // フッターの「この端末のパスワードの記憶を消す」
+  document.addEventListener('click', (e) => {
+    if (e.target instanceof Element && e.target.id === 'forgetKey') {
+      forget();
+      location.reload();
+    }
+  });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+
+</script>
+<script type="text/plain" id="appSrc">
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const RAW = Array.isArray(window.OPUS_VIDEOS) ? window.OPUS_VIDEOS : null;
+
+  if (!RAW) {
+    $('empty').hidden = false;
+    $('empty').textContent = 'データ（data.js）を読み込めませんでした。同じフォルダの「更新.bat」を実行してから、もう一度開いてください。';
+    return;
+  }
+
+  const CATS = [['all', 'すべて'], ['motion', 'モーション'], ['explainer', '解説'], ['3d', '3D'], ['interactive', 'ゲーム・操作']];
+  const CAT_LABEL = Object.fromEntries(CATS);
+  const TAG = {
+    canvas: 'Canvas', svg: 'SVG', threejs: 'Three.js', shader: 'シェーダー', gsap: 'GSAP', css: 'CSS',
+    audio: '音つき', particles: 'パーティクル', playable: '遊べる', pixel: 'ドット絵', webgl: 'WebGL',
+    physics: '物理演算', 'ai-image': 'AI画像',
+  };
+  // プロンプトはほぼ英語なので、日本語の検索語を英単語にも広げて探す
+  const JA = {
+    'ゲーム': ['game', 'playable'], '遊べる': ['playable', 'game'], '立体': ['3d'], '宇宙': ['space', 'planet', 'galaxy'],
+    '惑星': ['planet'], '星': ['star'], '商品': ['product'], '製品': ['product'], '紹介': ['launch', 'showcase', 'promo'],
+    'ローンチ': ['launch'], '広告': ['commercial', 'promo', 'advert'], 'ロゴ': ['logo'], '解説': ['explain'],
+    '説明': ['explain'], '地図': ['map'], '地球': ['earth', 'globe'], '音楽': ['music', 'beat'], '音': ['audio', 'sound'],
+    '粒子': ['particle'], 'パーティクル': ['particle'], '都市': ['city'], '街': ['city', 'town'], '車': ['car'],
+    '海': ['ocean', 'sea', 'wave'], '水': ['water', 'fluid'], '火': ['fire', 'flame'], '文字': ['text', 'typography'],
+    'タイポ': ['typography'], '時計': ['clock'], '天気': ['weather'], '雨': ['rain'], '雪': ['snow'], '料理': ['food', 'cook'],
+    '動物': ['animal'], '猫': ['cat'], '犬': ['dog'], '花': ['flower'], '木': ['tree'], '森': ['forest'], '山': ['mountain'],
+    '光': ['light', 'glow'], 'ネオン': ['neon'], 'ドット': ['pixel'], 'レトロ': ['retro', 'pixel'], 'アプリ': ['app'],
+    'ダッシュボード': ['dashboard'], 'グラフ': ['chart', 'graph'], 'データ': ['data'], '物理': ['physics'],
+    'シミュレーション': ['simulat'], 'アニメ': ['anime', 'animation'], 'ショーリール': ['showreel'], '縦型': ['vertical', '9:16'],
+    '動画': ['video'], '履歴書': ['résumé', 'resume'], 'サイト': ['website', 'landing'], 'ブランド': ['brand'],
+  };
+
+  const safeUrl = (u) => (typeof u === 'string' && /^https:\/\//.test(u) ? u : '');
+  const norm = (s) => String(s || '').toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '');
+
+  const items = RAW.map((v, i) => {
+    const prompt = String(v.prompt || '');
+    const tags = Array.isArray(v.tech_tags) ? v.tech_tags.map(String) : [];
+    const category = String(v.category || '');
+    return {
+      i, prompt, tags, category,
+      author: String(v.author || '不明'),
+      postUrl: safeUrl(v.post_url),
+      skillryUrl: safeUrl(v.skillry_url),
+      poster: safeUrl(v.poster_url),
+      partial: Boolean(v.prompt_partial),
+      added: String(v.added || ''),
+      key: norm(prompt) || `__${i}`,
+      len: prompt.length,
+      hay: [prompt, ...tags, ...tags.map((t) => TAG[t] || ''), CAT_LABEL[category] || ''].join(' ').toLowerCase(),
+    };
+  });
+
+  const byKey = new Map();
+  for (const it of items) {
+    const g = byKey.get(it.key);
+    if (g) g.push(it); else byKey.set(it.key, [it]);
+  }
+  for (const it of items) it.members = byKey.get(it.key);
+  const reps = [...byKey.values()].map((m) => m[0]);
+
+  const fmtDate = new Intl.DateTimeFormat('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+  const showDate = (s) => {
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(s + 'T00:00:00') : null;
+    return d && !Number.isNaN(d.getTime()) ? fmtDate.format(d) : s;
+  };
+
+  const fullCount = items.filter((it) => !it.partial).length;
+  const latest = items.reduce((a, it) => (it.added > a ? it.added : a), '');
+  $('sub').textContent =
+    `${items.length}本 ・ 中身の違うプロンプト ${byKey.size}種類 ・ 全文公開 ${fullCount}本` +
+    (latest ? ` ・ 最終追加 ${showDate(latest)}` : '');
+
+  const state ={ q: '', cat: 'all', group: true, fullOnly: false, sort: 'default' };
+
+  // 検索・絞り込みの状態は URL の # 以降に残す（再読み込みやブックマークで同じ表示に戻れる）
+  function readHash() {
+    const p = new URLSearchParams(location.hash.slice(1));
+    state.q = p.get('q') || '';
+    state.cat = CATS.some(([k]) => k === p.get('cat')) ? p.get('cat') : 'all';
+    state.group = p.get('group') !== '0';
+    state.fullOnly = p.get('full') === '1';
+    state.sort = Object.hasOwn(SORTS, p.get('sort') || '') ? p.get('sort') : 'default';
+    $('q').value = state.q;
+    $('group').checked = state.group;
+    $('fullOnly').checked = state.fullOnly;
+    $('sort').value = state.sort;
+  }
+  function writeHash() {
+    const p = new URLSearchParams();
+    if (state.q) p.set('q', state.q);
+    if (state.cat !== 'all') p.set('cat', state.cat);
+    if (!state.group) p.set('group', '0');
+    if (state.fullOnly) p.set('full', '1');
+    if (state.sort !== 'default') p.set('sort', state.sort);
+    const hash = p.toString();
+    try {
+      history.replaceState(null, '', hash ? '#' + hash : location.pathname + location.search);
+    } catch {
+      // file:// などで使えない環境では URL への保存だけ諦める
+    }
+  }
+
+  function expand(term) {
+    const out = new Set([term]);
+    for (const [ja, en] of Object.entries(JA)) if (term.includes(ja)) en.forEach((w) => out.add(w));
+    return [...out];
+  }
+
+  function visible(ignoreCat) {
+    const terms = state.q.toLowerCase().split(/\s+/).filter(Boolean).map(expand);
+    const pool = state.group ? reps : items;
+    return pool.filter((it) => {
+      if (state.fullOnly && it.partial) return false;
+      if (!ignoreCat && state.cat !== 'all' && it.category !== state.cat) return false;
+      if (!terms.length) return true;
+      const authors = (state.group ? it.members : [it]).map((m) => '@' + m.author.toLowerCase()).join(' ');
+      const hay = it.hay + ' ' + authors;
+      return terms.every((cands) => cands.some((c) => hay.includes(c)));
+    });
+  }
+
+  const SORTS = {
+    default: (a, b) => a.i - b.i,
+    long: (a, b) => b.len - a.len || a.i - b.i,
+    short: (a, b) => a.len - b.len || a.i - b.i,
+    popular: (a, b) => b.members.length - a.members.length || a.i - b.i,
+    new: (a, b) => (b.added > a.added ? 1 : b.added < a.added ? -1 : a.i - b.i),
+  };
+
+  function el(tag, props, ...children) {
+    const node = document.createElement(tag);
+    if (props) for (const [k, v] of Object.entries(props)) {
+      if (v == null || v === false) continue;
+      if (k === 'class') node.className = v;
+      else if (k === 'text') node.textContent = v;
+      else if (k.startsWith('on')) node.addEventListener(k.slice(2), v);
+      else node.setAttribute(k, v === true ? '' : v);
+    }
+    for (const c of children) if (c != null && c !== false) node.append(c);
+    return node;
+  }
+
+  function extLink(href, label, cls) {
+    return href
+      ? el('a', { class: cls || 'btn', href, target: '_blank', rel: 'noopener noreferrer' }, label)
+      : el('span', { class: cls || 'btn', 'aria-disabled': 'true' }, label);
+  }
+
+
+  function thumbImg(src, cls, holder, alt = '') {
+    if (!src) { holder?.classList.add('noimg'); return null; }
+    // 配布元のプレビュー画像は 960×600 前後。実際の表示サイズは CSS 側で決める
+    const img = el('img', { src, alt, width: 960, height: 600, loading: 'lazy', decoding: 'async', class: cls });
+    img.addEventListener('error', () => { img.remove(); holder?.classList.add('noimg'); }, { once: true });
+    return img;
+  }
+
+  function card(it) {
+    const n = it.members.length;
+    // 画像クリックでも開けるようにするマウス用の補助。キーボード・読み上げでは「全文を見る」ボタンを使う
+    const thumb = el('button', {
+      type: 'button', class: 'thumb', tabindex: '-1', 'aria-hidden': 'true', onclick: () => openDialog(it),
+    }, el('span', { class: 'cat', text: CAT_LABEL[it.category] || it.category }));
+    const img = thumbImg(it.poster, null, thumb);
+    if (img) thumb.prepend(img);
+
+    const preview = it.prompt.length > 420 ? it.prompt.slice(0, 420) + '…' : it.prompt;
+    return el('li', { class: 'card' },
+      thumb,
+      el('div', { class: 'body' },
+        el('div', { class: 'meta' },
+          el('h2', { class: 'author' },
+            el('span', { translate: 'no', text: '@' + it.author }),
+            state.group && n > 1 ? ' など' : null),
+          it.partial ? el('span', { class: 'badge', text: '一部のみ' }) : null,
+          n > 1 ? el('span', { class: 'badge dup', text: `同じプロンプト ×${n}` }) : null,
+          el('span', { class: 'badge', text: `${it.len.toLocaleString()}字` })),
+        el('p', { class: 'preview', text: preview }),
+        it.tags.length ? el('ul', { class: 'tags', 'aria-label': '使われている技術', translate: 'no' },
+          ...it.tags.map((t) => el('li', { text: TAG[t] || t }))) : null,
+        el('div', { class: 'actions' },
+          el('button', { type: 'button', class: 'btn primary', onclick: () => openDialog(it) }, '全文を見る'),
+          el('button', { type: 'button', class: 'btn', onclick: (e) => copy(it.prompt, e.currentTarget) }, 'コピー'),
+          extLink(it.postUrl, '元の投稿 ↗'))));
+  }
+
+  function renderChips() {
+    const base = visible(true);
+    $('chips').replaceChildren(...CATS.map(([key, label]) => {
+      const n = key === 'all' ? base.length : base.filter((it) => it.category === key).length;
+      return el('button', {
+        type: 'button', class: 'chip', 'aria-pressed': String(state.cat === key),
+        onclick: () => { state.cat = key; render(); },
+      }, label, el('span', { class: 'n', text: String(n) }));
+    }));
+  }
+
+  function render() {
+    writeHash();
+    renderChips();
+    const list = visible(false).sort(SORTS[state.sort] || SORTS.default);
+    const frag = document.createDocumentFragment();
+    for (const it of list) frag.append(card(it));
+    $('grid').replaceChildren(frag);
+    $('empty').hidden = list.length > 0;
+    const shown = state.group
+      ? list.reduce((a, it) => a + it.members.length, 0)
+      : list.length;
+    $('count').textContent = state.group
+      ? `${list.length}種類のプロンプトを表示中（作品数にすると${shown}本 / 全${items.length}本）`
+      : `${list.length}本を表示中（全${items.length}本）`;
+  }
+
+  // 全文ダイアログ
+  const dlg = $('dlg');
+  let current = null;
+
+  function openDialog(it) {
+    current = it;
+    const n = it.members.length;
+    $('dlgTitle').textContent = `@${it.author} のプロンプト`;
+    const body = $('dlgBody');
+    const img = thumbImg(it.poster, 'dlg-img', null, `@${it.author} の作品のプレビュー画像`);
+
+    // replaceChildren は null を文字列 "null" として挿入するので、空の要素は先に除く
+    body.replaceChildren(...[
+      img,
+      el('div', { class: 'dlg-meta' },
+        el('span', { class: 'badge', text: CAT_LABEL[it.category] || it.category }),
+        ...it.tags.map((t) => el('span', { class: 'badge', text: TAG[t] || t })),
+        el('span', { text: `${it.len.toLocaleString()}字` }),
+        it.added ? el('span', { text: `追加日 ${showDate(it.added)}` }) : null),
+      it.partial
+        ? el('p', { class: 'note', text: '作者がプロンプトの一部、または作品の説明だけを公開しているものです。このまま使っても同じ作品にはならない可能性があります。' })
+        : null,
+      el('pre', { class: 'prompt', tabindex: '0', 'aria-label': 'プロンプト全文', text: it.prompt }),
+      el('div', { class: 'links' },
+        extLink(it.postUrl, '元の投稿を見る（X）↗'),
+        extLink(it.skillryUrl, '動画を見る（Skillry）↗')),
+      n > 1
+        ? el('div', { class: 'others' },
+            el('h3', { text: `このプロンプトを使った作品（${n}本）` }),
+            el('ul', { translate: 'no' }, ...it.members.map((m) =>
+              el('li', null, m.postUrl
+                ? el('a', { href: m.postUrl, target: '_blank', rel: 'noopener noreferrer', text: '@' + m.author })
+                : '@' + m.author))))
+        : null,
+    ].filter(Boolean));
+
+    if (!dlg.open) dlg.showModal();
+    dlg.scrollTop = 0;
+    $('dlgCopy').focus();
+  }
+
+  $('dlgClose').addEventListener('click', () => dlg.close());
+  $('dlgCopy').addEventListener('click', (e) => current && copy(current.prompt, e.currentTarget));
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+
+  // コピー
+  const toast = $('toast');
+  let toastTimer = 0;
+  function showToast(msg) {
+    // モーダル表示中は通常の要素がダイアログの裏に隠れるので、ダイアログ内へ移す
+    const host = dlg.open ? dlg : document.body;
+    if (toast.parentNode !== host) {
+      toast.classList.remove('show');
+      host.append(toast);
+      void toast.offsetWidth; // 移動直後にスタイルを確定させないと表示アニメーションが効かない
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  async function copy(text, button) {
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    } catch {
+      const ta = el('textarea', { readonly: true, style: 'position:fixed;top:0;left:0;opacity:0' });
+      ta.value = text;
+      (dlg.open ? dlg : document.body).append(ta);
+      ta.select();
+      try { ok = document.execCommand('copy'); } catch { ok = false; }
+      ta.remove();
+    }
+    showToast(ok ? 'プロンプトをコピーしました' : 'コピーできませんでした。全文を選択してコピーしてください');
+    if (ok && button) {
+      const prev = button.textContent;
+      button.textContent = 'コピー済み';
+      setTimeout(() => { button.textContent = prev; }, 1500);
+    }
+  }
+
+  // 操作
+  let qTimer = 0;
+  $('q').addEventListener('input', (e) => {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 120);
+  });
+  $('group').addEventListener('change', (e) => { state.group = e.target.checked; render(); });
+  $('fullOnly').addEventListener('change', (e) => { state.fullOnly = e.target.checked; render(); });
+  $('sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || dlg.open || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target;
+    if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement || t.isContentEditable) return;
+    e.preventDefault();
+    $('q').focus();
+  });
+
+  window.addEventListener('hashchange', () => { readHash(); render(); });
+  readHash();
+  render();
+})();
+</script>
+</body>
+</html>
